@@ -4,6 +4,8 @@ import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/lib/auth-context"
 import { CartProvider } from "@/lib/cart-context"
+import { FavoritesProvider } from "@/lib/favorites-context"
+import { ChatProvider } from "@/lib/chat-context"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -20,10 +22,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="light">
       <body>
         <AuthProvider>
-          <CartProvider>{children}</CartProvider>
+          <CartProvider>
+            <FavoritesProvider>
+              <ChatProvider>{children}</ChatProvider>
+            </FavoritesProvider>
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>

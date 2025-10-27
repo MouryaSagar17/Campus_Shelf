@@ -2,13 +2,14 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { Menu, X, User, ShoppingCart } from "lucide-react"
+import { Menu, X, ShoppingCart, MessageSquare } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { useCart } from "@/lib/cart-context"
+import { ProfileDropdown } from "./profile-dropdown"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const { cart } = useCart()
 
   return (
@@ -31,13 +32,14 @@ export function Navbar() {
             <Link href="/post-ad" className="text-foreground hover:text-accent font-medium transition">
               Sell
             </Link>
-            <Link href="/chat" className="text-foreground hover:text-accent font-medium transition">
-              Messages
-            </Link>
           </div>
 
           {/* Right Actions */}
           <div className="hidden md:flex items-center gap-4">
+            <Link href="/chat" className="relative p-2 hover:bg-muted rounded-lg transition">
+              <MessageSquare className="w-5 h-5" />
+            </Link>
+
             <Link href="/cart" className="relative p-2 hover:bg-muted rounded-lg transition">
               <ShoppingCart className="w-5 h-5" />
               {cart.length > 0 && (
@@ -48,17 +50,7 @@ export function Navbar() {
             </Link>
 
             {user ? (
-              <div className="flex items-center gap-4">
-                <Link href="/profile" className="p-2 hover:bg-muted rounded-lg transition">
-                  <User className="w-5 h-5" />
-                </Link>
-                <button
-                  onClick={logout}
-                  className="px-4 py-2 text-foreground font-medium hover:bg-muted rounded-lg transition"
-                >
-                  Logout
-                </button>
-              </div>
+              <ProfileDropdown />
             ) : (
               <>
                 <Link href="/login" className="px-4 py-2 text-primary font-medium hover:bg-muted rounded-lg transition">
@@ -100,9 +92,9 @@ export function Navbar() {
                 <Link href="/profile" className="block px-4 py-2 hover:bg-muted rounded-lg">
                   Profile
                 </Link>
-                <button onClick={logout} className="w-full text-left px-4 py-2 hover:bg-muted rounded-lg">
-                  Logout
-                </button>
+                <Link href="/favorites" className="block px-4 py-2 hover:bg-muted rounded-lg">
+                  Favorites
+                </Link>
               </>
             ) : (
               <>

@@ -1,13 +1,32 @@
 "use client"
 
+import { useState } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { dummyItems } from "@/lib/dummy-data"
 import { ProductCard } from "@/components/product-card"
-import { Edit2, LogOut } from "lucide-react"
+import { EditProfileModal } from "@/components/edit-profile-modal"
+import { useAuth } from "@/lib/auth-context"
+import { useSearchParams } from "next/navigation"
+import { Edit2 } from "lucide-react"
 
 export default function ProfilePage() {
+  const { user } = useAuth()
+  const searchParams = useSearchParams()
+  const [isEditModalOpen, setIsEditModalOpen] = useState(searchParams.get("edit") === "true")
   const userListings = dummyItems.slice(0, 4)
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <p className="text-muted-foreground">Please log in to view your profile.</p>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -19,14 +38,18 @@ export default function ProfilePage() {
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-6">
               <div className="w-20 h-20 bg-accent rounded-full flex items-center justify-center text-accent-foreground font-bold text-3xl">
-                RK
+                {user.name.charAt(0).toUpperCase()}
               </div>
               <div>
-                <h1 className="text-3xl font-bold">Raj Kumar</h1>
-                <p className="text-muted-foreground">Member since January 2023</p>
+                <h1 className="text-3xl font-bold">{user.name}</h1>
+                <p className="text-muted-foreground">{user.college}</p>
+                <p className="text-sm text-muted-foreground mt-1">{user.about}</p>
               </div>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted transition">
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted transition"
+            >
               <Edit2 className="w-4 h-4" />
               Edit Profile
             </button>
@@ -76,15 +99,13 @@ export default function ProfilePage() {
             <button className="w-full text-left px-4 py-3 hover:bg-muted rounded-lg transition">
               Privacy Settings
             </button>
-            <button className="w-full text-left px-4 py-3 text-red-500 hover:bg-red-50 rounded-lg transition flex items-center gap-2">
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
           </div>
         </div>
       </main>
 
       <Footer />
+
+      <EditProfileModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} />
     </div>
   )
 }

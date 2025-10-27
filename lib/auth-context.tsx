@@ -8,6 +8,9 @@ interface User {
   email: string
   name: string
   college: string
+  phone?: string
+  about?: string
+  emailVerified?: boolean
 }
 
 interface AuthContextType {
@@ -16,6 +19,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   signup: (email: string, password: string, name: string, college: string) => Promise<void>
   logout: () => void
+  updateProfile: (updates: Partial<User>) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -40,6 +44,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       name: email.split("@")[0],
       college: "IIT Delhi",
+      emailVerified: true,
+      about: "Student at IIT Delhi",
+      phone: "+91 9876543210",
     }
     setUser(mockUser)
     localStorage.setItem("campusshelf_user", JSON.stringify(mockUser))
@@ -52,6 +59,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       name,
       college,
+      emailVerified: true,
+      about: `Student at ${college}`,
+      phone: "+91 9876543210",
     }
     setUser(mockUser)
     localStorage.setItem("campusshelf_user", JSON.stringify(mockUser))
@@ -62,7 +72,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("campusshelf_user")
   }
 
-  return <AuthContext.Provider value={{ user, isLoading, login, signup, logout }}>{children}</AuthContext.Provider>
+  const updateProfile = (updates: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...updates }
+      setUser(updatedUser)
+      localStorage.setItem("campusshelf_user", JSON.stringify(updatedUser))
+    }
+  }
+
+  return (
+    <AuthContext.Provider value={{ user, isLoading, login, signup, logout, updateProfile }}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export function useAuth() {
