@@ -2,23 +2,52 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { dummyItems } from "@/lib/dummy-data"
 import { useCart } from "@/lib/cart-context"
 import { useAuth } from "@/lib/auth-context"
+import { useFavorites } from "@/lib/favorites-context"
+import { useChat } from "@/lib/chat-context"
 import { Heart, MapPin, Star, ShoppingCart } from "lucide-react"
 
 export default function ProductDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const id = Number.parseInt(params.id as string)
   const product = dummyItems.find((item) => item.id === id)
-  const [isFavorite, setIsFavorite] = useState(false)
   const [quantity, setQuantity] = useState(1)
   const [addedToCart, setAddedToCart] = useState(false)
   const { addToCart } = useCart()
   const { user } = useAuth()
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites()
+  const { startConversation, setCurrentConversation } = useChat()
+  const favorited = isFavorite(id)
+
+  const handleFavoriteClick = () => {
+    if (favorited) {
+      removeFavorite(id)
+    } else {
+      addFavorite(id)
+    }
+  }
+
+  const handleChatWithSeller = () => {
+    if (!user) {
+      alert("Please login to chat with seller")
+      return
+    }
+    const conversation = startConversation(
+      product!.sellerId,
+      product!.seller,
+      product!.phone,
+      product!.id,
+      product!.title,
+    )
+    setCurrentConversation(conversation)
+    router.push("/chat")
+  }
 
   if (!product) {
     return (
@@ -86,8 +115,8 @@ export default function ProductDetailPage() {
                   </span>
                   <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
                 </div>
-                <button onClick={() => setIsFavorite(!isFavorite)} className="p-2 hover:bg-muted rounded-lg transition">
-                  <Heart className={`w-6 h-6 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"}`} />
+                <button onClick={handleFavoriteClick} className="p-2 hover:bg-muted rounded-lg transition">
+                  <Heart className={`w-6 h-6 ${favorited ? "fill-red-500 text-red-500" : "text-gray-400"}`} />
                 </button>
               </div>
 
@@ -165,7 +194,10 @@ export default function ProductDetailPage() {
                 {addedToCart ? "Added to Cart!" : "Add to Cart"}
               </button>
 
-              <button className="w-full px-4 py-3 bg-accent text-accent-foreground font-bold rounded-lg hover:opacity-90 transition mb-3">
+              <button
+                onClick={handleChatWithSeller}
+                className="w-full px-4 py-3 bg-accent text-accent-foreground font-bold rounded-lg hover:opacity-90 transition mb-3"
+              >
                 Chat with Seller
               </button>
               <button className="w-full px-4 py-3 border-2 border-accent text-accent font-bold rounded-lg hover:bg-accent/10 transition">

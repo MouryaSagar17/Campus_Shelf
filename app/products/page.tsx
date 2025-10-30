@@ -1,25 +1,32 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { ProductCard } from "@/components/product-card"
 import { SearchBar } from "@/components/search-bar"
-import { dummyItems, categories, colleges } from "@/lib/dummy-data"
+import { dummyItems, categories } from "@/lib/dummy-data"
 import { Filter } from "lucide-react"
 
 export default function ProductsPage() {
+  const searchParams = useSearchParams()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
-  const [selectedCollege, setSelectedCollege] = useState("All Colleges")
   const [sortBy, setSortBy] = useState("newest")
+
+  useEffect(() => {
+    const categoryParam = searchParams.get("category")
+    if (categoryParam) {
+      setSelectedCategory(decodeURIComponent(categoryParam))
+    }
+  }, [searchParams])
 
   const filteredItems = useMemo(() => {
     const items = dummyItems.filter((item) => {
       const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase())
       const matchesCategory = selectedCategory === "All" || item.category === selectedCategory
-      const matchesCollege = selectedCollege === "All Colleges" || item.college === selectedCollege
-      return matchesSearch && matchesCategory && matchesCollege
+      return matchesSearch && matchesCategory
     })
 
     // Sort items
@@ -32,7 +39,7 @@ export default function ProductsPage() {
     }
 
     return items
-  }, [searchQuery, selectedCategory, selectedCollege, sortBy])
+  }, [searchQuery, selectedCategory, sortBy])
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -57,21 +64,6 @@ export default function ProductsPage() {
               <div className="flex items-center gap-2 mb-6">
                 <Filter className="w-5 h-5" />
                 <h2 className="font-bold text-lg">Filters</h2>
-              </div>
-
-              <div className="mb-6">
-                <h3 className="font-semibold mb-3">College</h3>
-                <select
-                  value={selectedCollege}
-                  onChange={(e) => setSelectedCollege(e.target.value)}
-                  className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-                >
-                  {colleges.map((college) => (
-                    <option key={college} value={college}>
-                      {college}
-                    </option>
-                  ))}
-                </select>
               </div>
 
               {/* Category Filter */}

@@ -6,6 +6,7 @@ import { AuthProvider } from "@/lib/auth-context"
 import { CartProvider } from "@/lib/cart-context"
 import { FavoritesProvider } from "@/lib/favorites-context"
 import { ChatProvider } from "@/lib/chat-context"
+import { LocationProvider } from "@/lib/location-context"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -25,11 +26,13 @@ export default function RootLayout({
     <html lang="en" className="light">
       <body>
         <AuthProvider>
-          <CartProvider>
-            <FavoritesProvider>
-              <ChatProvider>{children}</ChatProvider>
-            </FavoritesProvider>
-          </CartProvider>
+          <LocationProvider>
+            <CartProvider>
+              <FavoritesProvider>
+                <ChatProvider>{children}</ChatProvider>
+              </FavoritesProvider>
+            </CartProvider>
+          </LocationProvider>
         </AuthProvider>
       </body>
     </html>
