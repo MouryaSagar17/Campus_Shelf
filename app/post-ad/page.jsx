@@ -12,7 +12,7 @@ export default function PostAdPage() {
     category: "Notes",
     price: "",
     college: "",
-    image: null,
+    images: [],
   })
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState("")
@@ -24,10 +24,17 @@ export default function PostAdPage() {
   }
 
   const handleFileChange = (e) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setFormData((prev) => ({ ...prev, image: file }))
+    const files = Array.from(e.target.files || [])
+    if (files.length > 0) {
+      setFormData((prev) => ({ ...prev, images: [...prev.images, ...files] }))
     }
+  }
+
+  const removeImage = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }))
   }
 
   const handleSubmit = async (e) => {
@@ -37,40 +44,26 @@ export default function PostAdPage() {
     setIsSuccess(false)
     try {
       const priceNum = Number(formData.price)
-      if (!formData.title.trim() || !formData.category.trim() || !formData.college.trim() || Number.isNaN(priceNum) || priceNum <= 0) {
-        setMessage("Please fill all required fields. Price must be > 0.")
+      if (!formData.title.trim() || !formData.description.trim() || !formData.category.trim() || !formData.college.trim() || Number.isNaN(priceNum) || priceNum <= 0 || formData.images.length < 3) {
+        setMessage("Please fill all required fields, provide a description, upload at least 3 images, and ensure price is > 0.")
         setIsSuccess(false)
         return
       }
-      let res
-      if (formData.image) {
-        const fd = new FormData()
-        fd.append("title", formData.title)
-        fd.append("description", formData.description)
-        fd.append("category", formData.category)
-        fd.append("price", String(priceNum))
-        fd.append("college", formData.college)
-        fd.append("image", formData.image)
-        res = await fetch("/api/listings", { method: "POST", body: fd })
-      } else {
-        const payload = {
-          title: formData.title,
-          description: formData.description,
-          category: formData.category,
-          price: priceNum,
-          college: formData.college,
-        }
-        res = await fetch("/api/listings", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        })
-      }
+      const fd = new FormData()
+      fd.append("title", formData.title)
+      fd.append("description", formData.description)
+      fd.append("category", formData.category)
+      fd.append("price", String(priceNum))
+      fd.append("college", formData.college)
+      formData.images.forEach((image, index) => {
+        fd.append(`images`, image)
+      })
+      const res = await fetch("/api/listings", { method: "POST", body: fd })
       const json = await res.json()
       if (json.ok) {
         setMessage("Ad posted successfully!")
         setIsSuccess(true)
-        setFormData({ title: "", description: "", category: "Notes", price: "", college: "", image: null })
+        setFormData({ title: "", description: "", category: "Notes", price: "", college: "", images: [] })
       } else {
         setMessage(json.error || "Failed to post ad")
         setIsSuccess(false)
@@ -179,17 +172,37 @@ export default function PostAdPage() {
 
           {/* Image Upload */}
           <div>
-            <label className="block text-sm font-semibold mb-2">Upload Image</label>
+            <label className="block text-sm font-semibold mb-2">Upload Images (Minimum 3) *</label>
             <div className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-accent transition">
-              <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="image-upload" />
+              <input type="file" accept="image/*" multiple onChange={handleFileChange} className="hidden" id="image-upload" />
               <label htmlFor="image-upload" className="cursor-pointer">
                 <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                 <p className="text-sm font-medium">
-                  {formData.image ? formData.image.name : "Click to upload or drag and drop"}
+                  {formData.images.length > 0 ? `${formData.images.length} image(s) selected` : "Click to upload or drag and drop"}
                 </p>
-                <p className="text-xs text-muted-foreground">PNG, JPG up to 10MB</p>
+                <p className="text-xs text-muted-foreground">PNG, JPG up to 10MB each (minimum 3 images)</p>
               </label>
             </div>
+            {formData.images.length > 0 && (
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {formData.images.map((image, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={URL.createObjectURL(image)}
+                      alt={`Preview ${index + 1}`}
+                      className="w-full h-20 object-cover rounded border"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {message && <div className="text-sm text-center text-muted-foreground">{message}</div>}
@@ -205,7 +218,7 @@ export default function PostAdPage() {
             </button>
             <button
               type="button"
-              onClick={() => setFormData({ title: "", description: "", category: "Notes", price: "", college: "", image: null })}
+              onClick={() => setFormData({ title: "", description: "", category: "Notes", price: "", college: "", images: [] })}
               className="flex-1 px-6 py-3 border-2 border-border text-foreground font-bold rounded-lg hover:bg-muted transition"
             >
               Cancel

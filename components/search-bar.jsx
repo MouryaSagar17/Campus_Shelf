@@ -2,14 +2,21 @@
 
 import { Search } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
+import { useRouter } from "next/navigation"
 
-export function SearchBar({ onSearch, placeholder = "Search notes, books..." }) {
+export function SearchBar({ onSearch, onSubmit, placeholder = "Search notes, books..." }) {
   const [query, setQuery] = useState("")
   const debounceRef = useRef(null)
+  const router = useRouter()
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    onSearch?.(query)
+    if (onSubmit) {
+      onSubmit(query)
+    } else {
+      // Default behavior: navigate to products page with search query
+      router.push(`/products?q=${encodeURIComponent(query)}`)
+    }
   }
 
   useEffect(() => {

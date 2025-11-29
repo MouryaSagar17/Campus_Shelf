@@ -6,7 +6,6 @@ const ListingSchema = new mongoose.Schema(
     category: { type: String, required: true },
     price: { type: Number, required: true },
     originalPrice: { type: Number, default: 0 },
-    image: { type: String },
     images: [{ type: String }],
     college: { type: String, required: true },
     seller: { type: String },

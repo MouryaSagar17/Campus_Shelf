@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth-context"
 import { useCart } from "@/lib/cart-context"
 import { useLocation } from "@/lib/location-context"
 import { ProfileDropdown } from "./profile-dropdown"
+import { SearchBar } from "./search-bar"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -15,19 +16,37 @@ export function Navbar() {
   const { selectedCity, setSelectedCity, cities } = useLocation()
   const [showLocationDropdown, setShowLocationDropdown] = useState(false)
 
-  const handleUseCurrentLocation = () => {
+  const handleUseCurrentLocation = async () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          // For demo purposes, we'll just show a message
-          // In production, you'd use reverse geocoding to get the city name
-          console.log("Location:", position.coords)
-          setShowLocationDropdown(false)
+        async (position) => {
+          const { latitude, longitude } = position.coords
+          try {
+            // Use Nominatim API for reverse geocoding (free, no API key needed)
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`
+            )
+            const data = await response.json()
+            const city = data.address?.city || data.address?.town || data.address?.village || "Unknown Location"
+            setSelectedCity(city)
+            setShowLocationDropdown(false)
+          } catch (error) {
+            console.error("Error fetching location:", error)
+            // Fallback: set to a default or show error
+            setSelectedCity("Location Unavailable")
+            setShowLocationDropdown(false)
+          }
         },
         (error) => {
           console.error("Error getting location:", error)
+          setSelectedCity("Location Access Denied")
+          setShowLocationDropdown(false)
         },
       )
+    } else {
+      console.error("Geolocation not supported")
+      setSelectedCity("Geolocation Not Supported")
+      setShowLocationDropdown(false)
     }
   }
 
@@ -41,16 +60,16 @@ export function Navbar() {
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">📚</span>
               </div>
-              <span className="font-bold text-xl text-primary hidden sm:inline">CampusShelf</span>
+              <span className="font-bold text-xl text-black hidden sm:inline">CampusShelf</span>
             </Link>
 
-            <div className="hidden md:relative">
+            <div className="md:relative">
               <button
                 onClick={() => setShowLocationDropdown(!showLocationDropdown)}
                 className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:border-gray-400 transition cursor-pointer"
               >
                 <MapPin className="w-4 h-4 text-gray-600" />
-                <span className="text-sm text-gray-700">{selectedCity}</span>
+                <span className="text-sm text-black">{selectedCity || "All Colleges"}</span>
               </button>
 
               {showLocationDropdown && (
@@ -69,7 +88,7 @@ export function Navbar() {
                         setShowLocationDropdown(false)
                       }}
                       className={`w-full text-left px-4 py-2 hover:bg-gray-100 text-sm ${
-                        selectedCity === city ? "bg-accent bg-opacity-10 text-accent font-medium" : ""
+                        selectedCity === city ? "bg-accent bg-opacity-10 text-black font-medium" : ""
                       }`}
                     >
                       {city}
@@ -82,11 +101,7 @@ export function Navbar() {
 
           {/* Center Search Bar */}
           <div className="hidden md:flex flex-1 max-w-md">
-            <input
-              type="text"
-              placeholder="Search 'Notes'"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent"
-            />
+            <SearchBar />
           </div>
 
           {/* Right Actions */}

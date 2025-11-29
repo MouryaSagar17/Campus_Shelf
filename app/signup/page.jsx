@@ -10,17 +10,32 @@ import { colleges } from "@/lib/dummy-data"
 import { Eye, EyeOff } from "lucide-react"
 
 export default function SignupPage() {
-  const [formData, setFormData] = useState({ name: "", email: "", password: "", confirmPassword: "", college: "" })
+  const [formData, setFormData] = useState({ name: "", email: "", password: "", confirmPassword: "", college: "", customCollege: "" })
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [showCustomCollege, setShowCustomCollege] = useState(false)
+
+
   const { signup } = useAuth()
   const router = useRouter()
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    if (name === "college") {
+      if (value === "Others") {
+        setShowCustomCollege(true)
+        setFormData((prev) => ({ ...prev, [name]: value, customCollege: "" }))
+      } else {
+        setShowCustomCollege(false)
+        setFormData((prev) => ({ ...prev, [name]: value, customCollege: "" }))
+      }
+    } else if (name === "customCollege") {
+      setFormData((prev) => ({ ...prev, [name]: value, college: value }))
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }))
+    }
     setError("")
   }
 
@@ -103,7 +118,7 @@ export default function SignupPage() {
                 <label className="block text-sm font-semibold mb-2">College</label>
                 <select
                   name="college"
-                  value={formData.college}
+                  value={showCustomCollege ? "Others" : formData.college}
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
@@ -114,7 +129,21 @@ export default function SignupPage() {
                       {college}
                     </option>
                   ))}
+                  <option value="Others">Others</option>
                 </select>
+                {showCustomCollege && (
+                  <div className="mt-2">
+                    <input
+                      type="text"
+                      name="customCollege"
+                      value={formData.customCollege}
+                      onChange={handleChange}
+                      placeholder="Enter your college name"
+                      required
+                      className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                    />
+                  </div>
+                )}
               </div>
 
               <div>

@@ -1,0 +1,3 @@
+- [x] Update product-card.jsx to use Next.js Image component instead of <img>
+- [x] Update products/[id]/page.jsx to use Next.js Image component instead of <img>
+- [ ] Test the app to verify images are displaying correctly

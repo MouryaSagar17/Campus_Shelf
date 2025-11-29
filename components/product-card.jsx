@@ -1,6 +1,8 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Heart, MapPin, Star } from "lucide-react"
 import { useFavorites } from "@/lib/favorites-context"
 import { getRelativeTime } from "@/lib/time-utils"
@@ -10,14 +12,16 @@ export function ProductCard({
   title,
   price,
   originalPrice,
-  image,
+  images,
   college,
   category,
   rating,
   reviews,
   postedAt,
+  postedTime,
   quantity = 1,
 }) {
+  const image = images?.[0] || "/placeholder.svg"
   const { isFavorite, addFavorite, removeFavorite } = useFavorites()
   const favorited = isFavorite(id)
 
@@ -30,17 +34,24 @@ export function ProductCard({
     }
   }
 
-  const postedTime = postedAt ? getRelativeTime(postedAt) : "Recently"
+  const [displayTime, setDisplayTime] = useState(postedAt ? "Recently" : (postedTime || "Recently"))
+
+  useEffect(() => {
+    if (postedAt) {
+      setDisplayTime(getRelativeTime(new Date(postedAt)))
+    }
+  }, [postedAt])
 
   return (
     <Link href={`/products/${id}`}>
       <div className="bg-card rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer h-full flex flex-col">
         {/* Image Container */}
         <div className="relative w-full h-48 bg-muted overflow-hidden group">
-          <img
+          <Image
             src={image || "/placeholder.svg"}
             alt={title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
           <button
             onClick={handleFavoriteClick}
@@ -58,7 +69,7 @@ export function ProductCard({
           <h3 className="font-semibold text-foreground line-clamp-2 mb-2 text-sm">{title}</h3>
 
           {/* Posted Time */}
-          <p className="text-xs text-muted-foreground mb-2">{postedTime}</p>
+          <p className="text-xs text-muted-foreground mb-2">{displayTime}</p>
 
           {/* College and City */}
           <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3">
@@ -79,8 +90,7 @@ export function ProductCard({
             <span className="text-xs text-muted-foreground">({reviews})</span>
           </div>
 
-          {/* Quantity */}
-          <p className="text-xs text-muted-foreground mb-3">Qty: {quantity}</p>
+
 
           {/* Price and Button */}
           <div className="mt-auto flex items-center justify-between">

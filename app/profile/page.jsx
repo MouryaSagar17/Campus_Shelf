@@ -72,10 +72,10 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* My Listings */}
+        {/* My Posts */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">My Listings</h2>
+            <h2 className="text-2xl font-bold">My Posts</h2>
             <button className="px-4 py-2 bg-accent text-accent-foreground font-semibold rounded-lg hover:opacity-90 transition">
               Post New Ad
             </button>
