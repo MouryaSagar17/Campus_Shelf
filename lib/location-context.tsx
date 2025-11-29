@@ -13,6 +13,7 @@ interface LocationContextType {
 const LocationContext = createContext<LocationContextType | undefined>(undefined)
 
 export const cities = [
+  "All Colleges",
   "Hyderabad",
   "Vijayawada",
   "Visakhapatnam",
@@ -26,7 +27,7 @@ export const cities = [
 ]
 
 export function LocationProvider({ children }: { children: React.ReactNode }) {
-  const [selectedCity, setSelectedCity] = useState("Hyderabad")
+  const [selectedCity, setSelectedCity] = useState("All Colleges")
 
   useEffect(() => {
     const saved = localStorage.getItem("selectedCity")

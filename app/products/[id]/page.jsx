@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { useParams } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
@@ -18,7 +19,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isFavorite, setIsFavorite] = useState(false)
-  const [quantity, setQuantity] = useState(1)
+
   const [addedToCart, setAddedToCart] = useState(false)
   const { addToCart } = useCart()
   const { user } = useAuth()
@@ -39,7 +40,7 @@ export default function ProductDetailPage() {
             category: it.category,
             price: it.price,
             originalPrice: it.originalPrice,
-            image: it.image || (it.images?.[0] ?? "/placeholder.svg"),
+            images: it.images || [],
             college: it.college,
             seller: it.seller,
             sellerId: it.sellerId,
@@ -49,7 +50,6 @@ export default function ProductDetailPage() {
             reviews: it.reviews ?? 0,
             quantity: it.quantity ?? 1,
             postedAt: it.postedAt ? new Date(it.postedAt) : new Date(it.createdAt || Date.now()),
-            images: it.images || [],
           })
           setLoading(false)
           return
@@ -106,7 +106,7 @@ export default function ProductDetailPage() {
       id: product.id,
       title: product.title,
       price: product.price,
-      image: product.image,
+      image: product.images?.[0] || "/placeholder.svg",
     })
     setAddedToCart(true)
     setTimeout(() => setAddedToCart(false), 2000)
@@ -149,7 +149,7 @@ export default function ProductDetailPage() {
           {/* Product Image */}
           <div className="lg:col-span-2">
             <div className="bg-muted rounded-lg overflow-hidden mb-6">
-              <img src={product.image || "/placeholder.svg"} alt={product.title} className="w-full h-96 object-cover" />
+              <Image src={product.images?.[0] || "/placeholder.svg"} alt={product.title} width={800} height={384} className="w-full h-96 object-cover" />
             </div>
 
             {/* Product Info */}
@@ -204,29 +204,7 @@ export default function ProductDetailPage() {
                 <p className="text-4xl font-bold text-primary">₹{product.price}</p>
               </div>
 
-              <div className="mb-4">
-                <label className="block text-sm font-semibold mb-2">Quantity</label>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-3 py-2 border border-border rounded-lg hover:bg-muted transition"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-12 text-center border border-border rounded-lg py-2"
-                  />
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="px-3 py-2 border border-border rounded-lg hover:bg-muted transition"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
+
 
               <button
                 onClick={handleAddToCart}

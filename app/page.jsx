@@ -2,26 +2,40 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { ProductCard } from "@/components/product-card"
 import { SearchBar } from "@/components/search-bar"
-import { LocationSearchBar } from "@/components/location-search-bar"
-import { CategoriesSection } from "@/components/categories-section"
+
 import { dummyItems, categories } from "@/lib/dummy-data"
+import { useLocation } from "@/lib/location-context"
 import { ChevronRight } from "lucide-react"
 
 export default function HomePage() {
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
-  const [selectedLocation, setSelectedLocation] = useState("All Colleges")
+  const { selectedCity, setSelectedCity } = useLocation()
   const [serverItems, setServerItems] = useState(null)
+
+  const handleSearchSubmit = (query) => {
+    const params = new URLSearchParams()
+    if (query) params.set("q", query)
+    if (selectedCategory && selectedCategory !== "All") params.set("category", selectedCategory)
+    router.push(`/products${params.toString() ? `?${params.toString()}` : ""}`)
+  }
 
   useEffect(() => {
     let ignore = false
     async function load() {
       try {
-        const res = await fetch("/api/listings?limit=12", { cache: "no-store" })
+        const params = new URLSearchParams()
+        if (searchQuery) params.set("q", searchQuery)
+        if (selectedCategory && selectedCategory !== "All") params.set("category", selectedCategory)
+        if (selectedCity && selectedCity !== "All Colleges") params.set("college", selectedCity)
+        const url = `/api/listings${params.toString() ? `?${params.toString()}` : ""}`
+        const res = await fetch(url, { cache: "no-store" })
         const json = await res.json()
         if (!ignore && json.ok) {
           const mapped = json.data.map((it) => ({
@@ -42,26 +56,33 @@ export default function HomePage() {
             images: it.images || [],
           }))
           setServerItems(mapped)
+        } else if (!ignore) {
+          setServerItems(null)
         }
-      } catch {}
+      } catch {
+        if (!ignore) setServerItems(null)
+      }
     }
     load()
     return () => {
       ignore = true
     }
-  }, [])
+  }, [searchQuery, selectedCategory, selectedCity])
 
-  const itemsSource = serverItems ?? dummyItems
+  const itemsSource = (serverItems && serverItems.length > 0) ? serverItems : dummyItems
 
   const filteredItems = useMemo(() => {
+    const usingServerResults = Boolean(serverItems)
     return itemsSource.filter((item) => {
       const q = searchQuery.toLowerCase()
-      const matchesSearch = item.title.toLowerCase().includes(q) || item.category.toLowerCase().includes(q)
+      const matchesSearch = usingServerResults
+        ? true // server already applied q filter
+        : (item.title.toLowerCase().includes(q) || item.category.toLowerCase().includes(q))
       const matchesCategory = selectedCategory === "All" || item.category === selectedCategory
-      const matchesLocation = selectedLocation === "All Colleges" || item.college === selectedLocation
+      const matchesLocation = selectedCity === "All Colleges" || item.college.toLowerCase().includes(selectedCity.toLowerCase())
       return matchesSearch && matchesCategory && matchesLocation
     })
-  }, [itemsSource, searchQuery, selectedCategory, selectedLocation])
+  }, [itemsSource, searchQuery, selectedCategory, selectedCity, serverItems])
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -75,40 +96,16 @@ export default function HomePage() {
             <p className="text-lg opacity-90 mb-8">Find the best notes and books from your college community</p>
           </div>
           <div className="max-w-4xl mx-auto space-y-4">
-            <SearchBar onSearch={setSearchQuery} />
-            <div className="flex flex-col sm:flex-row gap-3">
-              <LocationSearchBar onLocationSelect={setSelectedLocation} selectedLocation={selectedLocation} />
-            </div>
+            <SearchBar onSearch={setSearchQuery} onSubmit={handleSearchSubmit} />
           </div>
         </div>
       </section>
 
-      {/* Categories Section */}
-      <CategoriesSection />
+
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12">
-        {/* Category Filter */}
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-4">Quick Filter</h2>
-          <div className="flex gap-3 flex-wrap">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelectedCategory(cat)}
-                aria-label={`Filter by ${cat}`}
-                className={`px-4 py-2 rounded-lg font-medium transition ${
-                  selectedCategory === cat
-                    ? "bg-accent text-accent-foreground"
-                    : "bg-muted text-foreground hover:bg-muted/80"
-                }`}
-              >
-                {cat || ""}
-              </button>
-            ))}
-          </div>
-        </div>
+
 
         {/* Items Grid */}
         <div className="mb-8">
@@ -123,7 +120,7 @@ export default function HomePage() {
 
           {filteredItems.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filteredItems.slice(0, 8).map((item) => (
+              {filteredItems.map((item) => (
                 <ProductCard key={item.id} {...item} />
               ))}
             </div>

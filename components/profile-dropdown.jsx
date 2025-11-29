@@ -83,12 +83,12 @@ export function ProfileDropdown() {
             </Link>
 
             <Link
-              href="/my-listings"
+              href="/profile"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 px-4 py-2 hover:bg-muted transition text-foreground"
             >
               <ShoppingBag className="w-4 h-4" />
-              <span className="text-sm">My Listings</span>
+              <span className="text-sm">My Posts</span>
             </Link>
 
             <Link

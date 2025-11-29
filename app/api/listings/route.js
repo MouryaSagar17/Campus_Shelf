@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/db'
 import Listing from '@/models/Listing'
-import cloudinary from '@/lib/cloudinary'
+import configuredCloudinary from '@/lib/cloudinary'
 import { verifyJwt, TOKEN_COOKIE } from '@/lib/auth'
 
 export async function GET(request) {
@@ -70,28 +70,33 @@ export async function POST(request) {
       const category = String(form.get('category') || '').trim()
       const priceRaw = String(form.get('price') || '').trim()
       const college = String(form.get('college') || '').trim()
+      const files = form.getAll('images')
 
       const price = Number(priceRaw)
-      if (!title || !category || !college || Number.isNaN(price) || price <= 0) {
-        return NextResponse.json({ ok: false, error: 'Invalid form data: title, category, college required and price must be > 0' }, { status: 400 })
+      if (!title || !description || !category || !college || Number.isNaN(price) || price <= 0 || files.length < 3) {
+        return NextResponse.json({ ok: false, error: 'Invalid form data: title, description, category, college required, price must be > 0, and at least 3 images required' }, { status: 400 })
       }
 
       const payload = attachOwner({ title, description, category, price, college })
-
-      const file = form.get('image')
-      if (file && typeof file === 'object' && file.stream) {
-        const arrayBuffer = await file.arrayBuffer()
-        const buffer = Buffer.from(arrayBuffer)
-        if (cloudinary?.uploader?.upload_stream) {
-          const uploadUrl = await new Promise((resolve, reject) => {
-            const stream = cloudinary.uploader.upload_stream({ folder: 'campus-shelf' }, (err, result) => {
-              if (err) return reject(err)
-              resolve(result.secure_url)
-            })
-            stream.end(buffer)
-          })
-          payload.image = uploadUrl
+      if (files && files.length > 0) {
+        const imageUrls = []
+        for (const file of files) {
+          if (typeof file === 'object' && file.stream) {
+            const arrayBuffer = await file.arrayBuffer()
+            const buffer = Buffer.from(arrayBuffer)
+            if (configuredCloudinary?.uploader?.upload_stream) {
+              const uploadUrl = await new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream({ folder: 'campus-shelf' }, (err, result) => {
+                  if (err) return reject(err)
+                  resolve(result.secure_url)
+                })
+                stream.end(buffer)
+              })
+              imageUrls.push(uploadUrl)
+            }
+          }
         }
+        payload.images = imageUrls
       }
 
       const created = await Listing.create(payload)

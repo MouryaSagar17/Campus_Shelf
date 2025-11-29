@@ -3,6 +3,7 @@ import { AuthProvider } from "@/lib/auth-context"
 import { CartProvider } from "@/lib/cart-context"
 import { FavoritesProvider } from "@/lib/favorites-context"
 import { ChatProvider } from "@/lib/chat-context"
+import { LocationProvider } from "@/lib/location-context"
 import { ThemeProvider } from "@/components/theme-provider"
 
 export const metadata = {
@@ -10,20 +11,22 @@ export const metadata = {
   description: "Buy & Sell Student Materials",
 }
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <AuthProvider>
-            <CartProvider>
-              <FavoritesProvider>
-                <ChatProvider>
-                  {children}
-                </ChatProvider>
-              </FavoritesProvider>
-            </CartProvider>
-          </AuthProvider>
+          <LocationProvider>
+            <AuthProvider>
+              <CartProvider>
+                <FavoritesProvider>
+                  <ChatProvider>
+                    {children}
+                  </ChatProvider>
+                </FavoritesProvider>
+              </CartProvider>
+            </AuthProvider>
+          </LocationProvider>
         </ThemeProvider>
       </body>
     </html>
