@@ -22,10 +22,26 @@ export async function POST(request) {
     user.resetTokenExpires = new Date(Date.now() + 1000 * 60 * 30) // 30 minutes
     await user.save()
 
-    // Get base URL from request headers or environment
-    const origin = request.headers.get('origin') || request.headers.get('host')
-    const protocol = request.headers.get('x-forwarded-proto') || 'http'
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${origin}`
+    // Get base URL - prioritize environment variable
+    let baseUrl = process.env.NEXT_PUBLIC_APP_URL
+    
+    if (!baseUrl) {
+      // Try to get from request headers (for production deployments)
+      const host = request.headers.get('x-forwarded-host') || request.headers.get('host')
+      const protocol = request.headers.get('x-forwarded-proto') || 
+                      (request.headers.get('x-forwarded-ssl') === 'on' ? 'https' : 'http')
+      
+      if (host && !host.includes('localhost') && !host.includes('127.0.0.1')) {
+        baseUrl = `${protocol}://${host}`
+      } else {
+        // For localhost, use localhost:3000
+        baseUrl = 'http://localhost:3000'
+        console.warn('⚠️  NEXT_PUBLIC_APP_URL not set. Using localhost. For production, set NEXT_PUBLIC_APP_URL in .env.local')
+      }
+    }
+    
+    // Ensure baseUrl doesn't have trailing slash
+    baseUrl = baseUrl.replace(/\/$/, '')
 
     // Send password reset email
     try {
