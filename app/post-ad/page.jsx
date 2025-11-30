@@ -1,11 +1,15 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Upload } from "lucide-react"
+import { useAuth } from "@/lib/auth-context"
 
 export default function PostAdPage() {
+  const { user, isLoading } = useAuth()
+  const router = useRouter()
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -17,6 +21,13 @@ export default function PostAdPage() {
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState("")
   const [isSuccess, setIsSuccess] = useState(false)
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push("/login?redirect=/post-ad")
+    }
+  }, [user, isLoading, router])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -82,6 +93,34 @@ export default function PostAdPage() {
     const t = setTimeout(() => setMessage(""), 3000)
     return () => clearTimeout(t)
   }, [message])
+
+  // Show loading or redirect message
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center text-muted-foreground">Loading...</div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-muted-foreground mb-4">Please login to post an ad.</p>
+            <p className="text-sm text-muted-foreground">Redirecting to login...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

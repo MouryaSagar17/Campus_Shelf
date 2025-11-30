@@ -50,14 +50,17 @@ export async function POST(request) {
   try {
     await connectToDatabase()
 
+    // Require authentication for posting
     const cookie = request.cookies.get(TOKEN_COOKIE)?.value
     const session = cookie ? verifyJwt(cookie) : null
+    if (!session) {
+      return NextResponse.json({ ok: false, error: 'Unauthorized. Please login to post an ad.' }, { status: 401 })
+    }
 
     const attachOwner = (doc) => {
-      if (session) {
-        doc.ownerId = session.sub
-        doc.ownerName = session.name
-      }
+      // Session is guaranteed to exist here
+      doc.ownerId = session.sub
+      doc.ownerName = session.name
       return doc
     }
 

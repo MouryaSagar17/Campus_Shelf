@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { useAuth } from "@/lib/auth-context"
@@ -15,6 +15,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const { login } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirect = searchParams.get("redirect") || "/"
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -41,7 +43,7 @@ export default function LoginPage() {
       }
 
       await login(formData.email, formData.password)
-      router.push("/")
+      router.push(redirect)
     } catch (err) {
       setError(err.message || "Login failed. Please try again.")
     } finally {
