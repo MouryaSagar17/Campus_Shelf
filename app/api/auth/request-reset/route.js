@@ -29,21 +29,43 @@ export async function POST(request) {
 
     // Send password reset email
     try {
-      await sendPasswordResetEmail(user.email, token, baseUrl)
+      const emailResult = await sendPasswordResetEmail(user.email, token, baseUrl)
+      
+      // Check if email was actually sent or just logged
+      const isDevMode = !process.env.SMTP_HOST && !process.env.SMTP_USER
+      
+      if (isDevMode || process.env.NODE_ENV === 'development') {
+        console.log('='.repeat(60))
+        console.log('📧 PASSWORD RESET LINK (SMTP not configured):')
+        console.log(`${baseUrl}/reset-password?token=${token}`)
+        console.log('='.repeat(60))
+        console.log('To enable email sending, add SMTP config to .env.local')
+        console.log('See SETUP_EMAIL.md for instructions')
+        console.log('='.repeat(60))
+      }
+      
       return NextResponse.json({ 
         ok: true, 
-        message: 'Password reset email has been sent. Please check your inbox.' 
+        message: 'Password reset email has been sent. Please check your inbox.',
+        emailSent: !isDevMode
       })
     } catch (emailError) {
       console.error('Failed to send password reset email:', emailError)
-      // In development, still return success
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('Email sending failed in development. Reset token:', token)
+      console.error('Error details:', emailError.message)
+      
+      // In development, still return success with console link
+      if (process.env.NODE_ENV === 'development' || !process.env.SMTP_USER) {
+        console.warn('='.repeat(60))
+        console.warn('⚠️  EMAIL NOT SENT - SMTP not configured')
+        console.warn('Reset token:', token)
         console.warn('Reset link:', `${baseUrl}/reset-password?token=${token}`)
+        console.warn('Add SMTP config to .env.local to send emails')
+        console.warn('='.repeat(60))
         return NextResponse.json({ 
           ok: true, 
-          message: 'Password reset email would be sent. Check console for reset link in development.',
-          devToken: process.env.NODE_ENV === 'development' ? token : undefined
+          message: 'Password reset link generated. Check server console for the link (SMTP not configured).',
+          devToken: token,
+          devLink: `${baseUrl}/reset-password?token=${token}`
         })
       }
       // In production, return error
