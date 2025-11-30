@@ -37,7 +37,13 @@ export default function ForgotPasswordPage() {
             <p className="text-muted-foreground mb-8">Enter your email to request a reset link.</p>
 
             {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
-            {sent && <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-sm">If that email exists, a reset link has been sent.</div>}
+            {sent && (
+              <div className="mb-4 p-4 bg-green-100 text-green-700 rounded-lg text-sm">
+                <p className="font-semibold mb-2">✓ Reset link sent!</p>
+                <p>Please check your email inbox (and spam folder) for the password reset link.</p>
+                <p className="mt-2 text-xs">The link will expire in 30 minutes.</p>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>

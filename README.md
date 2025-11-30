@@ -62,11 +62,26 @@ Create `.env.local`:
 ```
 MONGODB_URI=your-mongodb-uri
 MONGODB_DB=campus_shelf
+JWT_SECRET=your-jwt-secret-key
 
 # Optional (for image uploads)
 CLOUDINARY_CLOUD_NAME=your-cloud-name
 CLOUDINARY_API_KEY=your-api-key
 CLOUDINARY_API_SECRET=your-api-secret
+
+# Optional (for email sending - password reset)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+SMTP_FROM=noreply@campusshelf.com
+
+# Optional (for production)
+NEXT_PUBLIC_APP_URL=https://your-domain.com
 ```
 
-If Cloudinary variables are omitted, the API will still accept JSON posts but won't upload images.
+**Notes:**
+- If Cloudinary variables are omitted, images will be stored as base64 in the database
+- If SMTP variables are omitted, password reset emails won't be sent (check console in development)
+- For Gmail, use an [App Password](https://support.google.com/accounts/answer/185833) instead of your regular password
+- In development, reset links will be logged to console if email is not configured

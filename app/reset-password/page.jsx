@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import Link from "next/link"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 
@@ -52,10 +53,27 @@ export default function ResetPasswordPage() {
         <div className="w-full max-w-md">
           <div className="bg-card rounded-lg p-8 border border-border">
             <h1 className="text-3xl font-bold mb-2">Reset Password</h1>
-            <p className="text-muted-foreground mb-8">Enter a new password for your account.</p>
-            {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
-            {success && <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-sm">Password updated.</div>}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {!token ? (
+              <>
+                <div className="mb-4 p-3 bg-yellow-100 text-yellow-700 rounded-lg text-sm">
+                  <p className="font-semibold">Invalid or missing reset token</p>
+                  <p className="mt-2">Please use the link from your email to reset your password.</p>
+                </div>
+                <Link href="/forgot-password" className="text-accent hover:underline font-semibold">
+                  Request a new reset link
+                </Link>
+              </>
+            ) : (
+              <>
+                <p className="text-muted-foreground mb-8">Enter a new password for your account.</p>
+                {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
+                {success && (
+                  <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-sm">
+                    <p className="font-semibold">✓ Password updated successfully!</p>
+                    <p className="mt-1">Redirecting to login...</p>
+                  </div>
+                )}
+                <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold mb-2">New Password</label>
                 <input
@@ -81,7 +99,9 @@ export default function ResetPasswordPage() {
               <button type="submit" disabled={loading} className="w-full px-4 py-2 bg-accent text-accent-foreground font-bold rounded-lg hover:opacity-90 transition disabled:opacity-50">
                 {loading ? "Updating..." : "Update Password"}
               </button>
-            </form>
+                </form>
+              </>
+            )}
           </div>
         </div>
       </main>

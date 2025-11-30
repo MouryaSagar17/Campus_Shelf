@@ -24,3 +24,21 @@ services:
       - key: CLOUDINARY_API_SECRET
         sync: false
         optional: true
+      - key: SMTP_HOST
+        sync: false
+        optional: true
+      - key: SMTP_PORT
+        sync: false
+        optional: true
+      - key: SMTP_USER
+        sync: false
+        optional: true
+      - key: SMTP_PASS
+        sync: false
+        optional: true
+      - key: SMTP_FROM
+        sync: false
+        optional: true
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+        optional: true
