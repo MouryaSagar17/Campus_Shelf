@@ -9,7 +9,7 @@ import { Footer } from "@/components/footer"
 import { dummyItems } from "@/lib/dummy-data"
 import { useCart } from "@/lib/cart-context"
 import { useAuth } from "@/lib/auth-context"
-import { Heart, MapPin, Star, ShoppingCart, MessageSquare, Phone } from "lucide-react"
+import { Heart, MapPin, Star, ShoppingCart, MessageSquare, Phone, ChevronLeft, ChevronRight } from "lucide-react"
 import { useChat } from "@/lib/chat-context"
 import { useRouter } from "next/navigation"
 
@@ -21,6 +21,7 @@ export default function ProductDetailPage() {
   const [isFavorite, setIsFavorite] = useState(false)
 
   const [addedToCart, setAddedToCart] = useState(false)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const { addToCart } = useCart()
   const { user } = useAuth()
   const { startConversation } = useChat()
@@ -51,6 +52,7 @@ export default function ProductDetailPage() {
             quantity: it.quantity ?? 1,
             postedAt: it.postedAt ? new Date(it.postedAt) : new Date(it.createdAt || Date.now()),
           })
+          setCurrentImageIndex(0) // Reset to first image when product loads
           setLoading(false)
           return
         }
@@ -60,6 +62,7 @@ export default function ProductDetailPage() {
       // Fallback to dummy data if API fails or returns 404
       const fallback = dummyItems.find((d) => String(d.id) === String(id))
       if (!ignore) setProduct(fallback || null)
+      if (!ignore) setCurrentImageIndex(0) // Reset to first image
       if (!ignore) setLoading(false)
     }
     load()
@@ -146,32 +149,105 @@ export default function ProductDetailPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Product Image */}
+          {/* Product Images Gallery */}
           <div className="lg:col-span-2">
-            <div className="bg-muted rounded-lg overflow-hidden mb-6">
-              {product.images?.[0] && (product.images[0].startsWith('data:') || product.images[0].startsWith('/') || !product.images[0].startsWith('http')) ? (
-                <img 
-                  src={product.images[0] || "/placeholder.svg"} 
-                  alt={product.title} 
-                  className="w-full h-96 object-cover"
-                  onError={(e) => {
-                    e.target.src = "/placeholder.svg"
-                  }}
-                />
-              ) : (
-                <Image 
-                  src={product.images?.[0] || "/placeholder.svg"} 
-                  alt={product.title} 
-                  width={800} 
-                  height={384} 
-                  className="w-full h-96 object-cover"
-                  unoptimized
-                  onError={(e) => {
-                    e.target.src = "/placeholder.svg"
-                  }}
-                />
+            {/* Main Image Display */}
+            <div className="bg-muted rounded-lg overflow-hidden mb-4 relative group">
+              {product.images && product.images.length > 0 && (
+                <>
+                  {product.images[currentImageIndex] && (product.images[currentImageIndex].startsWith('data:') || product.images[currentImageIndex].startsWith('/') || !product.images[currentImageIndex].startsWith('http')) ? (
+                    <img 
+                      src={product.images[currentImageIndex] || "/placeholder.svg"} 
+                      alt={`${product.title} - Image ${currentImageIndex + 1}`} 
+                      className="w-full h-96 object-cover"
+                      onError={(e) => {
+                        e.target.src = "/placeholder.svg"
+                      }}
+                    />
+                  ) : (
+                    <Image 
+                      src={product.images[currentImageIndex] || "/placeholder.svg"} 
+                      alt={`${product.title} - Image ${currentImageIndex + 1}`} 
+                      width={800} 
+                      height={384} 
+                      className="w-full h-96 object-cover"
+                      unoptimized
+                      onError={(e) => {
+                        e.target.src = "/placeholder.svg"
+                      }}
+                    />
+                  )}
+                  
+                  {/* Navigation Arrows (only show if more than 1 image) */}
+                  {product.images.length > 1 && (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault()
+                          setCurrentImageIndex((prev) => (prev === 0 ? product.images.length - 1 : prev - 1))
+                        }}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label="Previous image"
+                      >
+                        <ChevronLeft className="w-6 h-6" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault()
+                          setCurrentImageIndex((prev) => (prev === product.images.length - 1 ? 0 : prev + 1))
+                        }}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label="Next image"
+                      >
+                        <ChevronRight className="w-6 h-6" />
+                      </button>
+                      
+                      {/* Image Counter */}
+                      <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                        {currentImageIndex + 1} / {product.images.length}
+                      </div>
+                    </>
+                  )}
+                </>
               )}
             </div>
+
+            {/* Thumbnail Gallery */}
+            {product.images && product.images.length > 1 && (
+              <div className="grid grid-cols-4 gap-2">
+                {product.images.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                      currentImageIndex === index ? 'border-accent ring-2 ring-accent' : 'border-border hover:border-accent/50'
+                    }`}
+                  >
+                    {image && (image.startsWith('data:') || image.startsWith('/') || !image.startsWith('http')) ? (
+                      <img
+                        src={image || "/placeholder.svg"}
+                        alt={`${product.title} thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.src = "/placeholder.svg"
+                        }}
+                      />
+                    ) : (
+                      <Image
+                        src={image || "/placeholder.svg"}
+                        alt={`${product.title} thumbnail ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                        onError={(e) => {
+                          e.target.src = "/placeholder.svg"
+                        }}
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Product Info */}
             <div className="bg-card rounded-lg p-6 border border-border">
