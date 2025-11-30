@@ -47,7 +47,7 @@ export default function ProductsPage() {
             reviews: it.reviews ?? 0,
             quantity: it.quantity ?? 1,
             postedAt: it.postedAt ? new Date(it.postedAt) : new Date(it.createdAt || Date.now()),
-            images: it.images || [],
+            images: (it.images && it.images.length > 0) ? it.images : ["/placeholder.svg"],
           }))
           setServerItems(mapped)
         } else if (!ignore) {

@@ -79,24 +79,53 @@ export async function POST(request) {
 
       const payload = attachOwner({ title, description, category, price, college })
       if (files && files.length > 0) {
+        console.log(`Processing ${files.length} image(s)...`)
         const imageUrls = []
-        for (const file of files) {
-          if (typeof file === 'object' && file.stream) {
-            const arrayBuffer = await file.arrayBuffer()
-            const buffer = Buffer.from(arrayBuffer)
-            if (configuredCloudinary?.uploader?.upload_stream) {
-              const uploadUrl = await new Promise((resolve, reject) => {
-                const stream = cloudinary.uploader.upload_stream({ folder: 'campus-shelf' }, (err, result) => {
-                  if (err) return reject(err)
-                  resolve(result.secure_url)
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i]
+          // Check if file is a File object (has arrayBuffer method)
+          if (file && typeof file.arrayBuffer === 'function') {
+            try {
+              const arrayBuffer = await file.arrayBuffer()
+              const buffer = Buffer.from(arrayBuffer)
+              console.log(`Image ${i + 1}: ${file.name || 'unnamed'}, size: ${buffer.length} bytes, type: ${file.type}`)
+              
+              // Try Cloudinary first
+              if (configuredCloudinary?.uploader?.upload_stream) {
+                const uploadUrl = await new Promise((resolve, reject) => {
+                  const stream = configuredCloudinary.uploader.upload_stream({ folder: 'campus-shelf' }, (err, result) => {
+                    if (err) return reject(err)
+                    resolve(result.secure_url)
+                  })
+                  stream.end(buffer)
                 })
-                stream.end(buffer)
-              })
-              imageUrls.push(uploadUrl)
+                imageUrls.push(uploadUrl)
+                console.log(`Image ${i + 1} uploaded to Cloudinary: ${uploadUrl}`)
+              } else {
+                // Fallback: Convert to base64 data URL and store in database
+                const base64 = buffer.toString('base64')
+                const mimeType = file.type || 'image/jpeg'
+                const dataUrl = `data:${mimeType};base64,${base64}`
+                imageUrls.push(dataUrl)
+                console.log(`Image ${i + 1} saved as base64 (Cloudinary not configured), size: ${dataUrl.length} chars`)
+              }
+            } catch (uploadError) {
+              console.error(`Image ${i + 1} upload error:`, uploadError)
+              // Continue with other images, add placeholder for failed upload
+              imageUrls.push('/placeholder.svg')
             }
+          } else {
+            // If file is not a valid File object, add placeholder
+            console.warn(`Image ${i + 1}: Invalid file object, using placeholder`)
+            imageUrls.push('/placeholder.svg')
           }
         }
-        payload.images = imageUrls
+        payload.images = imageUrls.length > 0 ? imageUrls : ['/placeholder.svg']
+        console.log(`Total images saved: ${imageUrls.length}`)
+      } else {
+        // If no images provided, set default placeholder
+        payload.images = ['/placeholder.svg']
+        console.warn('No images provided, using placeholder')
       }
 
       const created = await Listing.create(payload)

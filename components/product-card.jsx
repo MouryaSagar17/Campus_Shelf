@@ -34,28 +34,47 @@ export function ProductCard({
     }
   }
 
-  const [displayTime, setDisplayTime] = useState(postedAt ? "Recently" : (postedTime || "Recently"))
+  // Initialize with "Recently" to match server render, then update after hydration
+  const [displayTime, setDisplayTime] = useState("Recently")
 
   useEffect(() => {
     if (postedAt) {
       setDisplayTime(getRelativeTime(new Date(postedAt)))
+    } else if (postedTime) {
+      setDisplayTime(postedTime)
     }
-  }, [postedAt])
+  }, [postedAt, postedTime])
 
   return (
     <Link href={`/products/${id}`}>
       <div className="bg-card rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer h-full flex flex-col">
         {/* Image Container */}
         <div className="relative w-full h-48 bg-muted overflow-hidden group">
-          <Image
-            src={image || "/placeholder.svg"}
-            alt={title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+          {image && (image.startsWith('data:') || image.startsWith('/') || !image.startsWith('http')) ? (
+            <img
+              src={image || "/placeholder.svg"}
+              alt={title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                e.target.src = "/placeholder.svg"
+              }}
+            />
+          ) : (
+            <Image
+              src={image || "/placeholder.svg"}
+              alt={title}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              unoptimized
+              onError={(e) => {
+                e.target.src = "/placeholder.svg"
+              }}
+            />
+          )}
           <button
             onClick={handleFavoriteClick}
             className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-muted transition"
+            suppressHydrationWarning
           >
             <Heart className={`w-5 h-5 ${favorited ? "fill-red-500 text-red-500" : "text-gray-400"}`} />
           </button>
@@ -69,7 +88,7 @@ export function ProductCard({
           <h3 className="font-semibold text-foreground line-clamp-2 mb-2 text-sm">{title}</h3>
 
           {/* Posted Time */}
-          <p className="text-xs text-muted-foreground mb-2">{displayTime}</p>
+          <p className="text-xs text-muted-foreground mb-2" suppressHydrationWarning>{displayTime}</p>
 
           {/* College and City */}
           <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3">
@@ -104,6 +123,7 @@ export function ProductCard({
               type="button"
               aria-label={`View ${title}`}
               className="px-3 py-1 bg-accent text-accent-foreground text-xs font-semibold rounded hover:opacity-90 transition"
+              suppressHydrationWarning
             >
               View
             </button>

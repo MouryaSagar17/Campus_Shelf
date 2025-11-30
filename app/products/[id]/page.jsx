@@ -40,7 +40,7 @@ export default function ProductDetailPage() {
             category: it.category,
             price: it.price,
             originalPrice: it.originalPrice,
-            images: it.images || [],
+            images: (it.images && it.images.length > 0) ? it.images : ["/placeholder.svg"],
             college: it.college,
             seller: it.seller,
             sellerId: it.sellerId,
@@ -149,7 +149,28 @@ export default function ProductDetailPage() {
           {/* Product Image */}
           <div className="lg:col-span-2">
             <div className="bg-muted rounded-lg overflow-hidden mb-6">
-              <Image src={product.images?.[0] || "/placeholder.svg"} alt={product.title} width={800} height={384} className="w-full h-96 object-cover" />
+              {product.images?.[0] && (product.images[0].startsWith('data:') || product.images[0].startsWith('/') || !product.images[0].startsWith('http')) ? (
+                <img 
+                  src={product.images[0] || "/placeholder.svg"} 
+                  alt={product.title} 
+                  className="w-full h-96 object-cover"
+                  onError={(e) => {
+                    e.target.src = "/placeholder.svg"
+                  }}
+                />
+              ) : (
+                <Image 
+                  src={product.images?.[0] || "/placeholder.svg"} 
+                  alt={product.title} 
+                  width={800} 
+                  height={384} 
+                  className="w-full h-96 object-cover"
+                  unoptimized
+                  onError={(e) => {
+                    e.target.src = "/placeholder.svg"
+                  }}
+                />
+              )}
             </div>
 
             {/* Product Info */}

@@ -67,6 +67,7 @@ export function Navbar() {
               <button
                 onClick={() => setShowLocationDropdown(!showLocationDropdown)}
                 className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:border-gray-400 transition cursor-pointer"
+                suppressHydrationWarning
               >
                 <MapPin className="w-4 h-4 text-gray-600" />
                 <span className="text-sm text-black">{selectedCity || "All Colleges"}</span>
@@ -77,6 +78,7 @@ export function Navbar() {
                   <button
                     onClick={handleUseCurrentLocation}
                     className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm font-medium text-accent border-b border-gray-200"
+                    suppressHydrationWarning
                   >
                     📍 Use Current Location
                   </button>
@@ -90,6 +92,7 @@ export function Navbar() {
                       className={`w-full text-left px-4 py-2 hover:bg-gray-100 text-sm ${
                         selectedCity === city ? "bg-accent bg-opacity-10 text-black font-medium" : ""
                       }`}
+                      suppressHydrationWarning
                     >
                       {city}
                     </button>
@@ -106,7 +109,7 @@ export function Navbar() {
 
           {/* Right Actions */}
           <div className="hidden md:flex items-center gap-4">
-            <select className="text-sm font-medium text-gray-700 bg-white border-0 cursor-pointer hover:text-accent">
+            <select className="text-sm font-medium text-gray-700 bg-white border-0 cursor-pointer hover:text-accent" suppressHydrationWarning>
               <option>ENGLISH</option>
               <option>HINDI</option>
             </select>
@@ -149,7 +152,7 @@ export function Navbar() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button className="md:hidden p-2" onClick={() => setIsOpen(!isOpen)}>
+          <button className="md:hidden p-2" onClick={() => setIsOpen(!isOpen)} suppressHydrationWarning>
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
