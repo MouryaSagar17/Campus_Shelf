@@ -38,7 +38,7 @@ export function SearchBar({ onSearch, onSubmit, placeholder = "Search notes, boo
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder}
-          className="w-full px-4 py-3 pl-10 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+          className="w-full px-4 py-3 pl-10 bg-white border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
           suppressHydrationWarning
         />
         <Search className="absolute left-3 top-3.5 w-5 h-5 text-muted-foreground" />
