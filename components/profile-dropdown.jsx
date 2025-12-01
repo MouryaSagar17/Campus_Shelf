@@ -5,13 +5,14 @@ import Link from "next/link"
 import { User, Heart, ShoppingBag, MessageSquare, HelpCircle, Globe, LogOut } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
+import { useI18n } from "@/lib/i18n-context"
 
 export function ProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false)
-  const [language, setLanguage] = useState("English")
   const dropdownRef = useRef(null)
   const { user, logout } = useAuth()
   const router = useRouter()
+  const { language, setLanguage, t } = useI18n()
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -61,7 +62,7 @@ export function ProfileDropdown() {
               className="flex items-center gap-3 px-4 py-2 hover:bg-muted transition text-foreground"
             >
               <User className="w-4 h-4" />
-              <span className="text-sm">View Profile</span>
+              <span className="text-sm">{t("nav.profile")}</span>
             </Link>
 
             <Link
@@ -113,17 +114,15 @@ export function ProfileDropdown() {
             <div className="px-4 py-2 border-t border-border">
               <div className="flex items-center gap-3 mb-2">
                 <Globe className="w-4 h-4" />
-                <span className="text-sm font-medium">Language</span>
+                <span className="text-sm font-medium">{t("nav.language")}</span>
               </div>
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
                 className="w-full px-2 py-1 text-sm border border-border rounded bg-background text-foreground"
               >
-                <option>English</option>
-                <option>Hindi</option>
-                <option>Telugu</option>
-                <option>Tamil</option>
+                <option value="en">{t("nav.english")}</option>
+                <option value="hi">{t("nav.hindi")}</option>
               </select>
             </div>
           </div>

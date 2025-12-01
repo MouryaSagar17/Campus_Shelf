@@ -11,6 +11,7 @@ import { SearchBar } from "@/components/search-bar"
 import { dummyItems, categories } from "@/lib/dummy-data"
 import { useLocation } from "@/lib/location-context"
 import { ChevronRight } from "lucide-react"
+import { useI18n } from "@/lib/i18n-context"
 
 export default function HomePage() {
   const router = useRouter()
@@ -18,6 +19,7 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState("All")
   const { selectedCity, setSelectedCity } = useLocation()
   const [serverItems, setServerItems] = useState(null)
+  const { t } = useI18n()
 
   const handleSearchSubmit = (query) => {
     const params = new URLSearchParams()
@@ -92,8 +94,8 @@ export default function HomePage() {
       <section className="bg-accent text-accent-foreground py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Buy & Sell Student Materials</h1>
-            <p className="text-lg opacity-90 mb-8">Find the best notes and books from your college community</p>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">{t("home.heroTitle")}</h1>
+            <p className="text-lg opacity-90 mb-8">{t("home.heroSubtitle")}</p>
           </div>
           <div className="max-w-4xl mx-auto space-y-4">
             <SearchBar onSearch={setSearchQuery} onSubmit={handleSearchSubmit} />
@@ -111,10 +113,10 @@ export default function HomePage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">
-              {selectedCategory === "All" ? "Latest Listings" : `${selectedCategory}`}
+              {selectedCategory === "All" ? t("home.latestListings") : `${selectedCategory}`}
             </h2>
             <Link href="/products" className="flex items-center gap-2 text-accent hover:underline font-medium">
-              View All <span className="inline-block"><ChevronRight className="w-4 h-4" /></span>
+              {t("home.viewAll")} <span className="inline-block"><ChevronRight className="w-4 h-4" /></span>
             </Link>
           </div>
 
@@ -126,7 +128,7 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-muted-foreground text-lg">No items found matching your search.</p>
+              <p className="text-muted-foreground text-lg">{t("home.noItems")}</p>
             </div>
           )}
         </div>

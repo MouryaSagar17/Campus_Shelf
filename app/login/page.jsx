@@ -7,6 +7,7 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { useAuth } from "@/lib/auth-context"
 import { Eye, EyeOff } from "lucide-react"
+import { useI18n } from "@/lib/i18n-context"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" })
@@ -17,6 +18,7 @@ export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get("redirect") || "/"
+  const { t } = useI18n()
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -58,14 +60,14 @@ export default function LoginPage() {
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="bg-card rounded-lg p-8 border border-border">
-            <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
-            <p className="text-muted-foreground mb-8">Sign in to your CampusShelf account</p>
+            <h1 className="text-3xl font-bold mb-2">{t("auth.loginTitle")}</h1>
+            <p className="text-muted-foreground mb-8">{t("auth.loginSubtitle")}</p>
 
             {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold mb-2">Email</label>
+                <label className="block text-sm font-semibold mb-2">{t("auth.email")}</label>
                 <input
                   type="email"
                   name="email"
@@ -78,7 +80,7 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-2">Password</label>
+                <label className="block text-sm font-semibold mb-2">{t("auth.password")}</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -99,7 +101,7 @@ export default function LoginPage() {
                   </button>
                 </div>
                 <div className="mt-2 text-right">
-                  <Link href="/forgot-password" className="text-sm text-accent hover:underline">Forgot password?</Link>
+                  <Link href="/forgot-password" className="text-sm text-accent hover:underline">{t("auth.forgotPassword")}</Link>
                 </div>
               </div>
 
@@ -108,15 +110,15 @@ export default function LoginPage() {
                 disabled={isLoading}
                 className="w-full px-4 py-2 bg-accent text-accent-foreground font-bold rounded-lg hover:opacity-90 transition disabled:opacity-50"
               >
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading ? t("auth.signingIn") : t("auth.signIn")}
               </button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-muted-foreground">
-                Don't have an account?{" "}
+                {t("auth.noAccount")}{" "}
                 <Link href="/signup" className="text-accent hover:underline font-semibold">
-                  Sign up
+                  {t("auth.signUp")}
                 </Link>
               </p>
             </div>

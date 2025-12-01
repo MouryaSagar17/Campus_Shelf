@@ -10,12 +10,14 @@ import { EditProfileModal } from "@/components/edit-profile-modal"
 import { useAuth } from "@/lib/auth-context"
 import { useSearchParams } from "next/navigation"
 import { Edit2 } from "lucide-react"
+import { useI18n } from "@/lib/i18n-context"
 
 export default function ProfilePage() {
   const { user } = useAuth()
   const searchParams = useSearchParams()
   const [isEditModalOpen, setIsEditModalOpen] = useState(searchParams.get("edit") === "true")
   const userListings = dummyItems.slice(0, 4)
+  const { t } = useI18n()
 
   if (!user) {
     return (
@@ -76,9 +78,9 @@ export default function ProfilePage() {
         {/* My Posts */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">My Posts</h2>
+            <h2 className="text-2xl font-bold">{t("profile.myPosts")}</h2>
             <Link href="/post-ad" className="px-4 py-2 bg-accent text-accent-foreground font-semibold rounded-lg hover:opacity-90 transition">
-              Post New Ad
+              {t("profile.postNewAd")}
             </Link>
           </div>
 

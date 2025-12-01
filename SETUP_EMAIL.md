@@ -57,3 +57,4 @@ After adding the SMTP settings:
 - Check server console for error messages
 - Make sure you restarted the server after adding the config
 
+

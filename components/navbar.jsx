@@ -8,6 +8,7 @@ import { useCart } from "@/lib/cart-context"
 import { useLocation } from "@/lib/location-context"
 import { ProfileDropdown } from "./profile-dropdown"
 import { SearchBar } from "./search-bar"
+import { useI18n } from "@/lib/i18n-context"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -15,6 +16,7 @@ export function Navbar() {
   const { cart } = useCart()
   const { selectedCity, setSelectedCity, cities } = useLocation()
   const [showLocationDropdown, setShowLocationDropdown] = useState(false)
+  const { language, setLanguage, t } = useI18n()
 
   const handleUseCurrentLocation = async () => {
     if (navigator.geolocation) {
@@ -54,7 +56,7 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 gap-4">
-          {/* Logo and Location */}
+          {/* Logo, Location and Free Shelf */}
           <div className="flex items-center gap-4 flex-1">
             <Link href="/" className="flex items-center gap-2 flex-shrink-0">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -63,7 +65,8 @@ export function Navbar() {
               <span className="font-bold text-xl text-black hidden sm:inline">CampusShelf</span>
             </Link>
 
-            <div className="md:relative">
+            <div className="md:relative flex items-center gap-3">
+              {/* Location Selector */}
               <button
                 onClick={() => setShowLocationDropdown(!showLocationDropdown)}
                 className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:border-gray-400 transition cursor-pointer"
@@ -99,6 +102,15 @@ export function Navbar() {
                   ))}
                 </div>
               )}
+
+              {/* Free Shelf Link */}
+              <Link
+                href="/free-shelf"
+                className="hidden md:inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-yellow-400 text-black text-xs font-semibold hover:bg-yellow-500 transition"
+              >
+                <span>{t("nav.freeShelf")}</span>
+                <span className="opacity-80 text-[10px]">{t("nav.freeShelfTagline")}</span>
+              </Link>
             </div>
           </div>
 
@@ -109,9 +121,14 @@ export function Navbar() {
 
           {/* Right Actions */}
           <div className="hidden md:flex items-center gap-4">
-            <select className="text-sm font-medium text-gray-700 bg-white border-0 cursor-pointer hover:text-accent" suppressHydrationWarning>
-              <option>ENGLISH</option>
-              <option>HINDI</option>
+            <select
+              className="text-sm font-medium text-gray-700 bg-white border-0 cursor-pointer hover:text-accent"
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              suppressHydrationWarning
+            >
+              <option value="en">{t("nav.english")}</option>
+              <option value="hi">{t("nav.hindi")}</option>
             </select>
 
             <Link href="/favorites" className="p-2 hover:bg-gray-100 rounded-lg transition">
@@ -139,13 +156,13 @@ export function Navbar() {
                   href="/login"
                   className="px-4 py-2 text-primary font-medium hover:bg-gray-100 rounded-lg transition"
                 >
-                  Login
+                  {t("nav.login")}
                 </Link>
                 <Link
                   href="/signup"
                   className="px-6 py-2 bg-accent text-accent-foreground font-bold rounded-full hover:opacity-90 transition"
                 >
-                  + SELL
+                  {t("nav.signup")}
                 </Link>
               </>
             )}
@@ -158,27 +175,30 @@ export function Navbar() {
         </div>
 
         {/* Mobile Menu */}
-        {isOpen && (
+            {isOpen && (
           <div className="md:hidden pb-4 space-y-2">
             <Link href="/products" className="block px-4 py-2 hover:bg-gray-100 rounded-lg">
-              Browse
+              {t("nav.browse")}
+            </Link>
+            <Link href="/free-shelf" className="block px-4 py-2 hover:bg-gray-100 rounded-lg">
+              {t("nav.freeShelf")} ({t("nav.freeShelfTagline")})
             </Link>
             <Link href="/post-ad" className="block px-4 py-2 hover:bg-gray-100 rounded-lg">
-              Sell
+              {t("nav.sell")}
             </Link>
             <Link href="/chat" className="block px-4 py-2 hover:bg-gray-100 rounded-lg">
-              Messages
+              {t("nav.messages")}
             </Link>
             <Link href="/cart" className="block px-4 py-2 hover:bg-gray-100 rounded-lg">
-              Cart ({cart.length})
+              {t("nav.cart")} ({cart.length})
             </Link>
             {user ? (
               <>
                 <Link href="/profile" className="block px-4 py-2 hover:bg-gray-100 rounded-lg">
-                  Profile
+                  {t("nav.profile")}
                 </Link>
                 <Link href="/favorites" className="block px-4 py-2 hover:bg-gray-100 rounded-lg">
-                  Favorites
+                  {t("nav.favorites")}
                 </Link>
               </>
             ) : (
